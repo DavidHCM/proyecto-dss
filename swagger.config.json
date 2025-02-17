@@ -1,0 +1,16 @@
+{
+  "swaggerDefinition": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "Dummy API",
+      "version": "1.0.0",
+      "description": "Dummy API for testing the users on swagger-ui"
+    },
+    "servers": [
+      {
+        "url": "https://ige.onrender.com"
+      }
+    ]
+  },
+  "apis": ["./src/routes/*.ts"]
+}
