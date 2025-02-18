@@ -33,8 +33,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "edcaebf4-2170-470d-a389-b4c4639dc574",
             "zIndex": -1,
+            "id": "edcaebf4-2170-470d-a389-b4c4639dc574",
             "data": {
               "type": "tm.BoundaryBox",
               "description": "",
@@ -58,8 +58,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "4cc3208e-b271-4ead-8c60-cd70f2e7a62b",
             "zIndex": -1,
+            "id": "4cc3208e-b271-4ead-8c60-cd70f2e7a62b",
             "data": {
               "type": "tm.BoundaryBox",
               "description": "",
@@ -83,8 +83,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "bb5e4903-011f-478c-8f40-f9c368eea0c4",
             "zIndex": -1,
+            "id": "bb5e4903-011f-478c-8f40-f9c368eea0c4",
             "data": {
               "type": "tm.BoundaryBox",
               "description": "",
@@ -108,8 +108,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "bf76af77-74e6-4a82-ae57-852a68d58906",
             "zIndex": -1,
+            "id": "bf76af77-74e6-4a82-ae57-852a68d58906",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Backend",
@@ -1201,6 +1201,78 @@
               "port": "3d3aacaa-328d-42b7-a168-292a444c9b66"
             },
             "vertices": []
+          },
+          {
+            "position": {
+              "x": 503.9999999999991,
+              "y": 498
+            },
+            "size": {
+              "width": 160,
+              "height": 120
+            },
+            "attrs": {
+              "text": {
+                "text": "Assets\nUser credentials\nDelivery addresses"
+              }
+            },
+            "visible": true,
+            "shape": "td-text-block",
+            "id": "69492ef1-ddbd-4afe-b40e-b62e5da61f8e",
+            "zIndex": 11,
+            "data": {
+              "type": "tm.Text",
+              "name": "Assets\nUser credentials\nDelivery addresses",
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 733.9999999999991,
+              "y": 498
+            },
+            "size": {
+              "width": 160,
+              "height": 120
+            },
+            "attrs": {
+              "text": {
+                "text": "Security controls\nAuthentication\nPassword hashing"
+              }
+            },
+            "visible": true,
+            "shape": "td-text-block",
+            "id": "240d9892-44ee-4b86-b2b0-3d6b5c4fbff2",
+            "data": {
+              "type": "tm.Text",
+              "name": "Security controls\nAuthentication\nPassword hashing",
+              "hasOpenThreats": false
+            },
+            "zIndex": 12
+          },
+          {
+            "position": {
+              "x": 955.9999999999991,
+              "y": 498
+            },
+            "size": {
+              "width": 200,
+              "height": 120
+            },
+            "attrs": {
+              "text": {
+                "text": "Threat actors\nMalicious user\nMan in the middle\nCompromised external service"
+              }
+            },
+            "visible": true,
+            "shape": "td-text-block",
+            "id": "db11dadb-5ee8-4f7b-b3a9-e0b4fba2d8b7",
+            "data": {
+              "type": "tm.Text",
+              "name": "Threat actors\nMalicious user\nMan in the middle\nCompromised external service",
+              "hasOpenThreats": false
+            },
+            "zIndex": 13
           }
         ]
       }
