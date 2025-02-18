@@ -1213,16 +1213,16 @@
             },
             "attrs": {
               "text": {
-                "text": "Assets\nUser credentials\nDelivery addresses"
+                "text": "Assets\n\nUser credentials\nDelivery addresses"
               }
             },
             "visible": true,
             "shape": "td-text-block",
-            "id": "69492ef1-ddbd-4afe-b40e-b62e5da61f8e",
             "zIndex": 11,
+            "id": "69492ef1-ddbd-4afe-b40e-b62e5da61f8e",
             "data": {
               "type": "tm.Text",
-              "name": "Assets\nUser credentials\nDelivery addresses",
+              "name": "Assets\n\nUser credentials\nDelivery addresses",
               "hasOpenThreats": false
             }
           },
@@ -1237,18 +1237,18 @@
             },
             "attrs": {
               "text": {
-                "text": "Security controls\nAuthentication\nPassword hashing"
+                "text": "Security controls\n\nAuthentication\nPassword hashing"
               }
             },
             "visible": true,
             "shape": "td-text-block",
+            "zIndex": 12,
             "id": "240d9892-44ee-4b86-b2b0-3d6b5c4fbff2",
             "data": {
               "type": "tm.Text",
-              "name": "Security controls\nAuthentication\nPassword hashing",
+              "name": "Security controls\n\nAuthentication\nPassword hashing",
               "hasOpenThreats": false
-            },
-            "zIndex": 12
+            }
           },
           {
             "position": {
@@ -1261,18 +1261,18 @@
             },
             "attrs": {
               "text": {
-                "text": "Threat actors\nMalicious user\nMan in the middle\nCompromised external service"
+                "text": "Threat actors\n\nMalicious user\nMan in the middle\nCompromised external service"
               }
             },
             "visible": true,
             "shape": "td-text-block",
+            "zIndex": 13,
             "id": "db11dadb-5ee8-4f7b-b3a9-e0b4fba2d8b7",
             "data": {
               "type": "tm.Text",
-              "name": "Threat actors\nMalicious user\nMan in the middle\nCompromised external service",
+              "name": "Threat actors\n\nMalicious user\nMan in the middle\nCompromised external service",
               "hasOpenThreats": false
-            },
-            "zIndex": 13
+            }
           }
         ]
       }
