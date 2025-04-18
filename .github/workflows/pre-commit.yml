@@ -28,7 +28,13 @@ jobs:
       - name: Fix Trailing Whitespace
         run: pre-commit run trailing-whitespace --all-files
 
+      - name: Commit Changes (if any)
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Fix trailing whitespace" || echo "No changes to commit"
+
       - name: Run Pre-commit Hooks
         run: |
           pre-commit run --all-files
-          git add .
