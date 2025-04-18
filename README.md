@@ -14,7 +14,7 @@ Para pruebas: npm run dev
 ## Ejecucion de pruebas
 npm test
 
-## Dependencias
+## Dependencias o mucho mas sencillo solo ingresa npm install
 npm install axios@^1.7.7
 npm install bcrypt@^5.1.1
 npm install cors@^2.8.5
