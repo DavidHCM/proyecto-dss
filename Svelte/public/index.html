@@ -1,33 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>IGE</title>
-	<base href="/">
-	<link rel="stylesheet" href="home.styles.css">
-	<link rel="stylesheet" href="deliveries.style.css">
-	<link rel="stylesheet" href="incidents.style.css">
-	<link rel="stylesheet" href="profile.style.css">
-	<link rel="stylesheet" href="leaflet.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IGE</title>
+    <base href="/" />
+    <link rel="stylesheet" href="home.styles.css" />
+    <link rel="stylesheet" href="deliveries.style.css" />
+    <link rel="stylesheet" href="incidents.style.css" />
+    <link rel="stylesheet" href="profile.style.css" />
+    <link rel="stylesheet" href="leaflet.css" />
 
-	<link rel="icon" href="Group.png" type="image/png">
-</head>
-<body style="margin: 0;">
-<!-- The Svelte app will be mounted here -->
-<div id="app"></div>
-</body>
+    <link rel="icon" href="Group.png" type="image/png" />
+  </head>
+  <body style="margin: 0">
+    <!-- The Svelte app will be mounted here -->
+    <div id="app"></div>
+  </body>
 
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=&callback=initMap"></script>
-<script defer src="/build/bundle.js"></script>
+  <script
+    async
+    defer
+    src="https://maps.googleapis.com/maps/api/js?key=&callback=initMap"
+  ></script>
+  <script defer src="/build/bundle.js"></script>
 
-<script>
-	function initMap() {
-		// Aquí inicializas el mapa
-		const map = new google.maps.Map(document.getElementById('map'), {
-			center: { lat: -34.397, lng: 150.644 },
-			zoom: 8
-		});
-	}
-</script>
+  <script>
+    function initMap() {
+      // Aquí inicializas el mapa
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: -34.397, lng: 150.644 },
+        zoom: 8,
+      });
+    }
+  </script>
 </html>
