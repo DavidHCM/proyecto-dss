@@ -581,9 +581,7 @@
               "providesAuthentication": false,
               "threats": []
             },
-            "children": [
-              "dd58e171-0569-4d7a-9e8a-31a1371a988b"
-            ]
+            "children": ["dd58e171-0569-4d7a-9e8a-31a1371a988b"]
           },
           {
             "position": {

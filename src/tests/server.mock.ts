@@ -1,7 +1,7 @@
-import express from 'express';
-import routesIndex from '../routes/user.route';
-import bodyParser from 'body-parser';
-import {config} from "dotenv";
+import express from "express";
+import routesIndex from "../routes/user.route";
+import bodyParser from "body-parser";
+import { config } from "dotenv";
 config();
 const app = express();
 

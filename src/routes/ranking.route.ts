@@ -1,8 +1,12 @@
-import { Router } from 'express';
-import { rankingControllers } from '../controllers/index';
+import { Router } from "express";
+import { rankingControllers } from "../controllers/index";
 import { authenticate, authorize, validateRequest } from "../middlewares";
-import { validateCreateRanking, validateRankingIdParam, validateUpdateRanking } from '../validators/ranking.validator';
-import {config} from "dotenv";
+import {
+  validateCreateRanking,
+  validateRankingIdParam,
+  validateUpdateRanking,
+} from "../validators/ranking.validator";
+import { config } from "dotenv";
 config();
 
 const router = Router();
@@ -51,7 +55,14 @@ const router = Router();
  *    403:
  *     description: Forbidden
  */
-router.post('', authenticate, authorize(['admin']),validateCreateRanking, validateRequest,  rankingControllers.create);
+router.post(
+  "",
+  authenticate,
+  authorize(["admin"]),
+  validateCreateRanking,
+  validateRequest,
+  rankingControllers.create,
+);
 
 /**
  * @swagger
@@ -75,7 +86,12 @@ router.post('', authenticate, authorize(['admin']),validateCreateRanking, valida
  *    403:
  *     description: Forbidden
  */
-router.get('', authenticate, authorize(['admin', 'support', 'driver']), rankingControllers.getAll);
+router.get(
+  "",
+  authenticate,
+  authorize(["admin", "support", "driver"]),
+  rankingControllers.getAll,
+);
 
 /**
  * @swagger
@@ -106,7 +122,14 @@ router.get('', authenticate, authorize(['admin', 'support', 'driver']), rankingC
  *    404:
  *     description: Ranking not found
  */
-router.get('/:rankingId', authenticate, authorize(['admin', 'support']), validateRankingIdParam, validateRequest, rankingControllers.getById);
+router.get(
+  "/:rankingId",
+  authenticate,
+  authorize(["admin", "support"]),
+  validateRankingIdParam,
+  validateRequest,
+  rankingControllers.getById,
+);
 
 /**
  * @swagger
@@ -139,7 +162,15 @@ router.get('/:rankingId', authenticate, authorize(['admin', 'support']), validat
  *    404:
  *     description: Ranking not found
  */
-router.put('/:rankingId', authenticate, authorize(['admin']),validateRankingIdParam,validateUpdateRanking,validateRequest, rankingControllers.update);
+router.put(
+  "/:rankingId",
+  authenticate,
+  authorize(["admin"]),
+  validateRankingIdParam,
+  validateUpdateRanking,
+  validateRequest,
+  rankingControllers.update,
+);
 
 /**
  * @swagger
@@ -166,6 +197,13 @@ router.put('/:rankingId', authenticate, authorize(['admin']),validateRankingIdPa
  *    404:
  *     description: Ranking not found
  */
-router.delete('/:rankingId', authenticate, authorize(['admin']),validateRankingIdParam,validateRequest, rankingControllers.delete);
+router.delete(
+  "/:rankingId",
+  authenticate,
+  authorize(["admin"]),
+  validateRankingIdParam,
+  validateRequest,
+  rankingControllers.delete,
+);
 
 export default router;

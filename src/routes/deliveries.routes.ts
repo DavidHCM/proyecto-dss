@@ -1,7 +1,12 @@
-import { Router } from 'express';
-import { deliveryControllers } from '../controllers/index';
+import { Router } from "express";
+import { deliveryControllers } from "../controllers/index";
 import { authenticate, authorize, validateRequest } from "../middlewares";
-import { validateCreateDelivery, validateDeliveryIdParam, validateGetByDate, validateUpdateDelivery} from '../validators/deliveries.validator';
+import {
+  validateCreateDelivery,
+  validateDeliveryIdParam,
+  validateGetByDate,
+  validateUpdateDelivery,
+} from "../validators/deliveries.validator";
 const router = Router();
 
 /**
@@ -48,7 +53,14 @@ const router = Router();
  *    403:
  *     description: Forbidden
  */
-router.post('', authenticate, authorize(['admin']),validateCreateDelivery,validateRequest, deliveryControllers.create);
+router.post(
+  "",
+  authenticate,
+  authorize(["admin"]),
+  validateCreateDelivery,
+  validateRequest,
+  deliveryControllers.create,
+);
 
 /**
  * @swagger
@@ -72,7 +84,12 @@ router.post('', authenticate, authorize(['admin']),validateCreateDelivery,valida
  *    403:
  *     description: Forbidden
  */
-router.get('/byDriver', authenticate, authorize(['admin', 'driver']), deliveryControllers.getByDriver);
+router.get(
+  "/byDriver",
+  authenticate,
+  authorize(["admin", "driver"]),
+  deliveryControllers.getByDriver,
+);
 
 /**
  * @swagger
@@ -96,7 +113,14 @@ router.get('/byDriver', authenticate, authorize(['admin', 'driver']), deliveryCo
  *    403:
  *     description: Forbidden
  */
-router.post('/byDate', authenticate, authorize(['admin', 'driver', 'user', 'support']),validateGetByDate,validateRequest, deliveryControllers.getByDate);
+router.post(
+  "/byDate",
+  authenticate,
+  authorize(["admin", "driver", "user", "support"]),
+  validateGetByDate,
+  validateRequest,
+  deliveryControllers.getByDate,
+);
 
 /**
  * @swagger
@@ -120,7 +144,12 @@ router.post('/byDate', authenticate, authorize(['admin', 'driver', 'user', 'supp
  *    403:
  *     description: Forbidden
  */
-router.get('', authenticate, authorize(['admin', 'driver', 'user', 'support']), deliveryControllers.getAll);
+router.get(
+  "",
+  authenticate,
+  authorize(["admin", "driver", "user", "support"]),
+  deliveryControllers.getAll,
+);
 
 /**
  * @swagger
@@ -144,7 +173,12 @@ router.get('', authenticate, authorize(['admin', 'driver', 'user', 'support']), 
  *    403:
  *     description: Forbidden
  */
-router.get('/active', authenticate, authorize(['admin', 'driver', 'user', 'support']), deliveryControllers.getAllActive);
+router.get(
+  "/active",
+  authenticate,
+  authorize(["admin", "driver", "user", "support"]),
+  deliveryControllers.getAllActive,
+);
 
 /**
  * @swagger
@@ -175,7 +209,14 @@ router.get('/active', authenticate, authorize(['admin', 'driver', 'user', 'suppo
  *    404:
  *     description: Delivery not found
  */
-router.get('/:deliveryId', authenticate, authorize(['admin', 'driver', 'user', 'support']),validateDeliveryIdParam,validateRequest, deliveryControllers.getById);
+router.get(
+  "/:deliveryId",
+  authenticate,
+  authorize(["admin", "driver", "user", "support"]),
+  validateDeliveryIdParam,
+  validateRequest,
+  deliveryControllers.getById,
+);
 
 /**
  * @swagger
@@ -208,7 +249,15 @@ router.get('/:deliveryId', authenticate, authorize(['admin', 'driver', 'user', '
  *    404:
  *     description: Delivery not found
  */
-router.put('/:deliveryId', authenticate, authorize(['admin', 'driver']),validateDeliveryIdParam,validateUpdateDelivery,validateRequest, deliveryControllers.update);
+router.put(
+  "/:deliveryId",
+  authenticate,
+  authorize(["admin", "driver"]),
+  validateDeliveryIdParam,
+  validateUpdateDelivery,
+  validateRequest,
+  deliveryControllers.update,
+);
 
 /**
  * @swagger
@@ -235,6 +284,13 @@ router.put('/:deliveryId', authenticate, authorize(['admin', 'driver']),validate
  *    404:
  *     description: Delivery not found
  */
-router.delete('/:deliveryId', authenticate, authorize(['admin']),validateDeliveryIdParam,validateRequest, deliveryControllers.delete);
+router.delete(
+  "/:deliveryId",
+  authenticate,
+  authorize(["admin"]),
+  validateDeliveryIdParam,
+  validateRequest,
+  deliveryControllers.delete,
+);
 
 export default router;

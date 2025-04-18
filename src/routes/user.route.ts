@@ -1,9 +1,14 @@
-import { Router } from 'express';
-import {passwordController, userControllers} from '../controllers/index';
-import { uploadS3 } from '../service/file-upload.service';
-import passport from 'passport';
+import { Router } from "express";
+import { passwordController, userControllers } from "../controllers/index";
+import { uploadS3 } from "../service/file-upload.service";
+import passport from "passport";
 import { authenticate, authorize, validateRequest } from "../middlewares";
-import { validateRegisterUser, validateUserIdParam, validateLogin, validateUploadProfilePic } from '../validators/user.validator';
+import {
+  validateRegisterUser,
+  validateUserIdParam,
+  validateLogin,
+  validateUploadProfilePic,
+} from "../validators/user.validator";
 
 const router = Router();
 
@@ -31,7 +36,6 @@ const router = Router();
  *      description: The time the user was created
  */
 
-
 /**
  * @swagger
  * /user:
@@ -54,7 +58,7 @@ const router = Router();
  *    403:
  *     description: Forbidden
  */
-router.get('', authenticate, authorize(['admin']), userControllers.getAll);
+router.get("", authenticate, authorize(["admin"]), userControllers.getAll);
 
 /**
  * @swagger
@@ -85,7 +89,12 @@ router.get('', authenticate, authorize(['admin']), userControllers.getAll);
  *    404:
  *     description: User not found
  */
-router.get('/drivers',authenticate, authorize(['admin', 'driver', 'support']), userControllers.getDrivers);
+router.get(
+  "/drivers",
+  authenticate,
+  authorize(["admin", "driver", "support"]),
+  userControllers.getDrivers,
+);
 
 /**
  * @swagger
@@ -116,7 +125,14 @@ router.get('/drivers',authenticate, authorize(['admin', 'driver', 'support']), u
  *    404:
  *     description: User not found
  */
-router.get('/:userId', authenticate, authorize(['admin', 'driver', 'support']),  validateUserIdParam, validateRequest, userControllers.getById);
+router.get(
+  "/:userId",
+  authenticate,
+  authorize(["admin", "driver", "support"]),
+  validateUserIdParam,
+  validateRequest,
+  userControllers.getById,
+);
 
 /**
  * @swagger
@@ -149,7 +165,12 @@ router.get('/:userId', authenticate, authorize(['admin', 'driver', 'support']), 
  *    404:
  *     description: User not found
  */
-router.put('/:userId', authenticate, authorize(['admin', 'driver']), userControllers.update);
+router.put(
+  "/:userId",
+  authenticate,
+  authorize(["admin", "driver"]),
+  userControllers.update,
+);
 
 /**
  * @swagger
@@ -176,7 +197,12 @@ router.put('/:userId', authenticate, authorize(['admin', 'driver']), userControl
  *    404:
  *     description: User not found
  */
-router.delete('/:userId', authenticate, authorize(['admin']), userControllers.delete);
+router.delete(
+  "/:userId",
+  authenticate,
+  authorize(["admin"]),
+  userControllers.delete,
+);
 
 /**
  * @swagger
@@ -196,7 +222,12 @@ router.delete('/:userId', authenticate, authorize(['admin']), userControllers.de
  *    400:
  *     description: Bad request (missing parameter or invalid data)
  */
-router.post('/register',validateRegisterUser, validateRequest, userControllers.register);
+router.post(
+  "/register",
+  validateRegisterUser,
+  validateRequest,
+  userControllers.register,
+);
 
 /**
  * @swagger
@@ -228,9 +259,8 @@ router.post('/register',validateRegisterUser, validateRequest, userControllers.r
  *    400:
  *     description: Bad request (missing parameter or invalid credentials)
  */
-router.post('/login',validateLogin, validateRequest, userControllers.login);
+router.post("/login", validateLogin, validateRequest, userControllers.login);
 
-    
 /**
  * @swagger
  * /user/google:
@@ -242,7 +272,7 @@ router.post('/login',validateLogin, validateRequest, userControllers.login);
  *     description: Redirect to Google's OAuth 2.0 endpoint.
  *    500:
  *     description: Internal server error.
- * 
+ *
  * /user/callback:
  *  get:
  *   description: Callback URL for Google authentication.
@@ -268,17 +298,21 @@ router.post('/login',validateLogin, validateRequest, userControllers.login);
  *    500:
  *     description: Internal server error.
  */
-router.get('/google', passport.authenticate('google', { 
-    scope: ['profile', 'email'] 
-}));
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  }),
+);
 
-router.get('/callback',
-    passport.authenticate('google', { 
-        failureRedirect: '/login' 
-    }),
-    (req, res) => {
-      res.redirect('/'); // Enviar a home
-    }
+router.get(
+  "/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+  }),
+  (req, res) => {
+    res.redirect("/"); // Enviar a home
+  },
 );
 
 /**
@@ -311,7 +345,10 @@ router.get('/callback',
  *    400:
  *     description: Bad request (missing parameter or invalid credentials)
  */
-router.post('/send-reset-password-email', passwordController.sendResetPasswordEmail);
+router.post(
+  "/send-reset-password-email",
+  passwordController.sendResetPasswordEmail,
+);
 
 /**
  * @swagger
@@ -343,7 +380,7 @@ router.post('/send-reset-password-email', passwordController.sendResetPasswordEm
  *    400:
  *     description: Bad request (missing parameter or invalid credentials)
  */
-router.post('/reset-password', userControllers.updatePassword);
+router.post("/reset-password", userControllers.updatePassword);
 
 /**
  * @swagger
@@ -378,7 +415,15 @@ router.post('/reset-password', userControllers.updatePassword);
  *    500:
  *     description: Internal server error
  */
-router.post('/upload', authenticate, authorize(['admin', 'driver', 'support']), uploadS3.single('file'),  validateUploadProfilePic, validateRequest, userControllers.uploadUserProfilePic);
+router.post(
+  "/upload",
+  authenticate,
+  authorize(["admin", "driver", "support"]),
+  uploadS3.single("file"),
+  validateUploadProfilePic,
+  validateRequest,
+  userControllers.uploadUserProfilePic,
+);
 
 /**
  * @swagger
@@ -404,6 +449,6 @@ router.post('/upload', authenticate, authorize(['admin', 'driver', 'support']), 
  *    404:
  *     description: File not found
  */
-router.get('/file/:key',  userControllers.getUserProfilePic);
+router.get("/file/:key", userControllers.getUserProfilePic);
 
 export default router;

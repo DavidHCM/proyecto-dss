@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import {passwordController, userControllers} from '../controllers/index';
-import { uploadS3 } from '../service/file-upload.service';
+import { Router } from "express";
+import { passwordController, userControllers } from "../controllers/index";
+import { uploadS3 } from "../service/file-upload.service";
 import { authenticate, authorize } from "../middlewares";
 
 const router = Router();
@@ -35,7 +35,6 @@ const router = Router();
  *    400:
  *     description: Bad request (missing parameter or invalid credentials)
  */
-router.get('/reset-password', passwordController.serveResetPasswordForm);
-
+router.get("/reset-password", passwordController.serveResetPasswordForm);
 
 export default router;

@@ -1,7 +1,9 @@
 # IGE
+
 Sistema inteligente de gestión de entregas diseñado para mejorar la eficiencia de los conductores y optimizar las operaciones logísticas. La aplicación ayuda a los conductores a rastrear entregas, registrar paquetes y ofrece funciones avanzadas como clasificación de conductores, gestión de incidentes, soporte de rutas y sugerencias de rutas.
 
 ## Ejecucion de programa
+
 npm install
 
 npm start
@@ -10,11 +12,12 @@ o
 
 Para pruebas: npm run dev
 
-
 ## Ejecucion de pruebas
+
 npm test
 
 ## Dependencias o mucho mas sencillo solo ingresa npm install
+
 npm install axios@^1.7.7
 npm install bcrypt@^5.1.1
 npm install cors@^2.8.5

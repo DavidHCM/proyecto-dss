@@ -1,5 +1,4 @@
-
-import express, {Request, Response, NextFunction, Application} from "express";
+import express, { Request, Response, NextFunction, Application } from "express";
 import deliveriesRoutes from "./deliveries.routes";
 import incidentsRoutes from "./incidents.routes";
 import routeSuggestionRoutes from "./routeSuggestion.route";
@@ -8,27 +7,21 @@ import rankingRoutes from "./ranking.route";
 import notificationRoute from "./notification.route";
 import chatMessageRoute from "./chatMessage.route";
 import passwordReset from "./passwordReset.route";
-import xss from 'xss';
-import { googleAuth } from '../middlewares/google-auth';
-import googleAuthRoutes from '../routes/googleAuth.routes';
+import xss from "xss";
+import { googleAuth } from "../middlewares/google-auth";
+import googleAuthRoutes from "../routes/googleAuth.routes";
 
 import { authenticate, authorize } from "../middlewares";
 const router = express.Router();
 import { HTTP_STATUS } from "../types/http-status-codes";
-import {config} from "dotenv";
+import { config } from "dotenv";
 config();
 
-
 router.use(express.json());
-
 
 const app: Application = express();
 googleAuth(app);
 router.use(express.json());
-
-
-
-
 
 /**
  * @swagger
@@ -54,7 +47,7 @@ router.use(express.json());
  *      description: Api is running
  */
 router.get("/", (req, res) => {
-    res.send("Api is running");
+  res.send("Api is running");
 });
 
 /**
@@ -113,7 +106,6 @@ router.use("/notification", notificationRoute);
  */
 router.use("/message", chatMessageRoute);
 
-
 /**
  * @swagger
  * tags:
@@ -128,16 +120,16 @@ router.use("/resetPassword", passwordReset);
  *  name: Google
  *  description: Google auth route
  */
-router.use('/authGoogle', googleAuthRoutes);
+router.use("/authGoogle", googleAuthRoutes);
 
 /**
  * @swagger
  * tags:
- *  name: Auth  
+ *  name: Auth
  *  description: Auth for general routes when loggin in
  */
-router.get("/auth", authenticate, (req,res) =>{
-    res.sendStatus(200);
+router.get("/auth", authenticate, (req, res) => {
+  res.sendStatus(200);
 });
 
 /**
@@ -151,15 +143,18 @@ router.get("/auth", authenticate, (req,res) =>{
  *      description: Bad request error
  */
 router.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    const statusCode = err.status || HTTP_STATUS.SERVER_ERROR;
-    const message = typeof err.message === 'string' ? err.message : 'An unexpected error occurred';
+  const statusCode = err.status || HTTP_STATUS.SERVER_ERROR;
+  const message =
+    typeof err.message === "string"
+      ? err.message
+      : "An unexpected error occurred";
 
-    console.error('Error:', err);
+  console.error("Error:", err);
 
-    res.status(statusCode).send({
-        message: xss(message),
-        statusCode,
-    });
+  res.status(statusCode).send({
+    message: xss(message),
+    statusCode,
+  });
 });
 
 export default router;

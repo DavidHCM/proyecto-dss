@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { routeSuggestionControllers } from '../controllers/index';
+import { Router } from "express";
+import { routeSuggestionControllers } from "../controllers/index";
 import { authenticate, authorize } from "../middlewares";
 
 const router = Router();
@@ -48,7 +48,12 @@ const router = Router();
  *    403:
  *     description: Forbidden
  */
-router.post('', authenticate, authorize(['admin', 'driver']), routeSuggestionControllers.create);
+router.post(
+  "",
+  authenticate,
+  authorize(["admin", "driver"]),
+  routeSuggestionControllers.create,
+);
 
 /**
  * @swagger
@@ -72,7 +77,12 @@ router.post('', authenticate, authorize(['admin', 'driver']), routeSuggestionCon
  *    403:
  *     description: Forbidden
  */
-router.get('', authenticate, authorize(['admin', 'driver', 'support', 'user']), routeSuggestionControllers.getAll);
+router.get(
+  "",
+  authenticate,
+  authorize(["admin", "driver", "support", "user"]),
+  routeSuggestionControllers.getAll,
+);
 
 /**
  * @swagger
@@ -103,7 +113,12 @@ router.get('', authenticate, authorize(['admin', 'driver', 'support', 'user']), 
  *    404:
  *     description: Route suggestion not found
  */
-router.get('/:routeSuggestionId', authenticate, authorize(['admin', 'driver', 'support']), routeSuggestionControllers.getById);
+router.get(
+  "/:routeSuggestionId",
+  authenticate,
+  authorize(["admin", "driver", "support"]),
+  routeSuggestionControllers.getById,
+);
 
 /**
  * @swagger
@@ -136,7 +151,12 @@ router.get('/:routeSuggestionId', authenticate, authorize(['admin', 'driver', 's
  *    404:
  *     description: Route suggestion not found
  */
-router.put('/:routeSuggestionId', authenticate, authorize(['admin', 'driver']), routeSuggestionControllers.update);
+router.put(
+  "/:routeSuggestionId",
+  authenticate,
+  authorize(["admin", "driver"]),
+  routeSuggestionControllers.update,
+);
 
 /**
  * @swagger
@@ -163,8 +183,12 @@ router.put('/:routeSuggestionId', authenticate, authorize(['admin', 'driver']), 
  *    404:
  *     description: Route suggestion not found
  */
-router.delete('/:routeSuggestionId', authenticate, authorize(['admin']), routeSuggestionControllers.delete);
-
+router.delete(
+  "/:routeSuggestionId",
+  authenticate,
+  authorize(["admin"]),
+  routeSuggestionControllers.delete,
+);
 
 /**
  * @swagger
@@ -189,6 +213,6 @@ router.delete('/:routeSuggestionId', authenticate, authorize(['admin']), routeSu
  *     description: Forbidden
  */
 //router.post('/routeFromMap', authenticate, authorize(['admin', 'driver', 'support', 'user']), routeSuggestionControllers.routeFromMap);
-router.post('/routeFromMap', routeSuggestionControllers.routeFromMap);
+router.post("/routeFromMap", routeSuggestionControllers.routeFromMap);
 
 export default router;

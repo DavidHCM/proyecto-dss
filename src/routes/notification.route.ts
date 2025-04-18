@@ -1,7 +1,11 @@
-import { Router } from 'express';
-import { notificationControllers } from '../controllers/index';
+import { Router } from "express";
+import { notificationControllers } from "../controllers/index";
 import { authenticate, authorize, validateRequest } from "../middlewares";
-import { validateCreateNotification, validateNotificationIdParam, validateUpdateNotification } from '../validators/notification.validator';
+import {
+  validateCreateNotification,
+  validateNotificationIdParam,
+  validateUpdateNotification,
+} from "../validators/notification.validator";
 
 const router = Router();
 
@@ -52,7 +56,14 @@ const router = Router();
  *    403:
  *     description: Forbidden
  */
-router.post('', authenticate, authorize(['admin']),validateCreateNotification,validateRequest, notificationControllers.create);
+router.post(
+  "",
+  authenticate,
+  authorize(["admin"]),
+  validateCreateNotification,
+  validateRequest,
+  notificationControllers.create,
+);
 
 /**
  * @swagger
@@ -76,7 +87,12 @@ router.post('', authenticate, authorize(['admin']),validateCreateNotification,va
  *    403:
  *     description: Forbidden
  */
-router.get('', authenticate, authorize(['admin', 'support', 'driver', 'user']), notificationControllers.getAll);
+router.get(
+  "",
+  authenticate,
+  authorize(["admin", "support", "driver", "user"]),
+  notificationControllers.getAll,
+);
 
 /**
  * @swagger
@@ -100,7 +116,12 @@ router.get('', authenticate, authorize(['admin', 'support', 'driver', 'user']), 
  *    403:
  *     description: Forbidden
  */
-router.get('/byUser', authenticate, authorize(['admin', 'support', 'driver', 'user']), notificationControllers.getForPerson);
+router.get(
+  "/byUser",
+  authenticate,
+  authorize(["admin", "support", "driver", "user"]),
+  notificationControllers.getForPerson,
+);
 
 /**
  * @swagger
@@ -131,7 +152,14 @@ router.get('/byUser', authenticate, authorize(['admin', 'support', 'driver', 'us
  *    404:
  *     description: Notification not found
  */
-router.get('/:notificationId', authenticate, authorize(['admin', 'support', 'user', 'driver']),validateNotificationIdParam,validateRequest, notificationControllers.getById);
+router.get(
+  "/:notificationId",
+  authenticate,
+  authorize(["admin", "support", "user", "driver"]),
+  validateNotificationIdParam,
+  validateRequest,
+  notificationControllers.getById,
+);
 
 /**
  * @swagger
@@ -164,7 +192,15 @@ router.get('/:notificationId', authenticate, authorize(['admin', 'support', 'use
  *    404:
  *     description: Notification not found
  */
-router.put('/:notificationId', authenticate, authorize(['admin']),validateNotificationIdParam,validateUpdateNotification,validateRequest, notificationControllers.update);
+router.put(
+  "/:notificationId",
+  authenticate,
+  authorize(["admin"]),
+  validateNotificationIdParam,
+  validateUpdateNotification,
+  validateRequest,
+  notificationControllers.update,
+);
 
 /**
  * @swagger
@@ -191,6 +227,13 @@ router.put('/:notificationId', authenticate, authorize(['admin']),validateNotifi
  *    404:
  *     description: Notification not found
  */
-router.delete('/:notificationId', authenticate, authorize(['admin']),validateNotificationIdParam,validateRequest, notificationControllers.delete);
+router.delete(
+  "/:notificationId",
+  authenticate,
+  authorize(["admin"]),
+  validateNotificationIdParam,
+  validateRequest,
+  notificationControllers.delete,
+);
 
 export default router;
