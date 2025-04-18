@@ -28,7 +28,7 @@ app.use(
     secret: "supersecretkey", // Cambia esto en producción
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // Usa `true` si tu app está en HTTPS
+    cookie: { secure: false }, // Usa `true` si tu app está en HTTPs
   }),
 );
 
@@ -43,7 +43,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://ige-front.onrender.com", // TODO: Cambiar a la url en deploy
+    origin: "https://ige-front.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
@@ -67,7 +67,7 @@ mongoose
 
     const io = new Server(server, {
       cors: {
-        origin: "https://ige-front.onrender.com", // Cambiar a la URL específica si es necesario
+        origin: "https://ige-front.onrender.com",
         methods: ["GET", "POST", "PUT", "DELETE"],
       },
     });
