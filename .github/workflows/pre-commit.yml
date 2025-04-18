@@ -9,6 +9,7 @@ on:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -18,8 +19,11 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install Dependencies
+      - name: Install Node Dependencies
         run: npm install
 
+      - name: Install Pre-commit
+        run: pip install pre-commit
+
       - name: Run Pre-commit Hooks
-        uses: pre-commit/action@v3.0.1
+        run: pre-commit run --all-files
