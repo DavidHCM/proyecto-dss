@@ -32,12 +32,10 @@ const chatSocketHandler = (io: Server) => {
       const username = socket.data.username || "Desconocido";
 
       if (previousRoom && previousRoom !== roomName) {
-        socket
-          .to(previousRoom)
-          .emit("userLeft", {
-            message: `${username} ha salido de la sala`,
-            username,
-          });
+        socket.to(previousRoom).emit("userLeft", {
+          message: `${username} ha salido de la sala`,
+          username,
+        });
         socket.leave(previousRoom);
       }
 
@@ -45,12 +43,10 @@ const chatSocketHandler = (io: Server) => {
       socket.data.roomName = roomName;
 
       //console.log(`${username} se unió a la sala ${roomName}`);
-      socket
-        .to(roomName)
-        .emit("userJoined", {
-          message: `${username} se ha unido a la sala`,
-          username,
-        });
+      socket.to(roomName).emit("userJoined", {
+        message: `${username} se ha unido a la sala`,
+        username,
+      });
     });
 
     socket.on("sendMessage", async ({ roomName, message }) => {
