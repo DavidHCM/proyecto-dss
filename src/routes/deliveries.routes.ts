@@ -98,7 +98,6 @@ router.get('/byDriver', authenticate, authorize(['admin', 'driver']), deliveryCo
  */
 router.post('/byDate', authenticate, authorize(['admin', 'driver', 'user', 'support']),validateGetByDate,validateRequest, deliveryControllers.getByDate);
 
-
 /**
  * @swagger
  * /deliveries:

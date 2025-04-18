@@ -11,12 +11,17 @@ import notificationSocketHandler from './sockets/socket.handler';
 import chatSocketHandler from './sockets/chatSocker.handler'
 import session from "express-session";
 import passport from "passport";
+import helmet from 'helmet';
 config();
 
 
 import routesIndex from './routes/index';
 
 const app = express();
+
+app.use(helmet());
+app.disable('x-powered-by');
+
 app.use(cors());
 
 

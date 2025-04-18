@@ -6,157 +6,170 @@ import { v4 as uuidv4 } from 'uuid';
 import { HTTP_STATUS } from '../types/http-status-codes';
 import { uploadFileToS3, getFileFromS3 } from '../service/file-upload.service';
 import { User as UserType } from '../types/user';
-import {rankingControllers} from "./ranking.controller";
-import {config} from "dotenv";
+import { rankingControllers } from "./ranking.controller";
+import { config } from "dotenv";
+import xss from 'xss';
 config();
 
 const secretKey = process.env.JWT_SECRET;
 
-
-
 class userController {
     async getAll(req: Request, res: Response) {
         try {
-            const results = await User.find({}, {password: 0});
+            const results = await User.find({}, { password: 0 });
             if (!results || results.length === 0) {
-                throw ('User not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('No users found');
             }
-            res.send(results);
+            res.status(HTTP_STATUS.SUCCESS).json(results);
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({message: 'No users found'});
+            console.error('Error fetching all users:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No users found'),
+            });
         }
     }
 
     async getDrivers(req: Request, res: Response) {
         try {
-            const results = await User.find({role: 'driver'}, {password: 0});
-            res.send(results);
+            const results = await User.find({ role: 'driver' }, { password: 0 });
+            res.status(HTTP_STATUS.SUCCESS).json(results);
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({message: 'No drivers found'});
+            console.error('Error fetching drivers:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No drivers found'),
+            });
         }
     }
 
     async getById(req: Request, res: Response) {
         try {
             const userId = req.params.userId;
-            const existingUser = await User.findOne({userId}, {password: 0});
+            const existingUser = await User.findOne({ userId }, { password: 0 });
             if (!existingUser) {
-                throw ('User does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('User does not exist');
             }
-            res.send(existingUser);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching user';
 
-            res.status(status).send({message, error: err});
+            const sanitizedUser = {
+                ...existingUser.toObject(),
+                userId: xss(existingUser.userId),
+                name: xss(existingUser.name),
+                email: xss(existingUser.email),
+                role: xss(existingUser.role),
+                status: xss(existingUser.status),
+                profilePic: xss(existingUser.profilePic),
+                createdAt: existingUser.createdAt,
+            };
+
+            res.status(HTTP_STATUS.SUCCESS).json(sanitizedUser);
+        } catch (err) {
+            console.error('Error fetching user by ID:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching user'),
+            });
         }
     }
 
     async getId(user: any) {
         try {
             const userId = user;
-            const existingUser = await User.findOne({userId}, {password: 0});
+            const existingUser = await User.findOne({ userId }, { password: 0 });
             if (!existingUser) {
-                throw ('User does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('User does not exist');
             }
-            return existingUser
-
+            return existingUser;
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching user';
-
-            return {message, error: err}
+            console.error('Error fetching user by ID:', err);
+            throw new Error('Error fetching user');
         }
-    };
+    }
 
     async update(req: Request, res: Response) {
         try {
             const userId = req.params.userId;
             const updatedData = req.body;
 
-            const existingUser = await User.findOne({userId});
+            const existingUser = await User.findOne({ userId });
 
             if (!existingUser) {
-                throw ('User does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('User does not exist');
             }
 
             const updatedUser = await User.findOneAndUpdate(
-                {userId},
+                { userId },
                 updatedData,
-                {new: true, runValidators: true}
+                { new: true, runValidators: true }
             );
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedUser);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error updating user';
-
-            res.status(status).send({message, error: err});
+            console.error('Error updating user:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating user'),
+            });
         }
     }
 
-    async updatePassword(req: Request, res: Response){
+    async updatePassword(req: Request, res: Response) {
         try {
             const { token, newPassword } = req.body;
             if (!newPassword || !token) {
-                throw ('No user or password provided: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('No user or password provided');
             }
 
             const decoded = jwt.verify(token as string, process.env.JWT_SECRET!) as { userId: string };
             const userId = decoded.userId;
 
-            const existingUser = await User.findOne({userId});
+            const existingUser = await User.findOne({ userId });
             if (!existingUser) {
-                throw ('User does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('User does not exist');
             }
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-            const updatedUser = await User.findOneAndUpdate(
+            await User.findOneAndUpdate(
                 { userId },
                 { password: hashedPassword },
                 { new: true, runValidators: true }
             );
 
-            res.status(HTTP_STATUS.SUCCESS).send({message: 'User updated successfully'});
-
+            res.status(HTTP_STATUS.SUCCESS).send({ message: 'Password updated successfully' });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching user';
-
-            res.status(status).send({message, error: err});
+            console.error('Error updating password:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating password'),
+            });
         }
     }
 
     async delete(req: Request, res: Response) {
         try {
             const userId = req.params.userId;
-            const existingUser = await User.findOne({userId});
+            const existingUser = await User.findOne({ userId });
 
             if (!existingUser) {
-                throw ('User does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('User does not exist');
             }
 
-            const deletedUser = await User.deleteOne({userId});
+            const deletedUser = await User.deleteOne({ userId });
             res.status(HTTP_STATUS.SUCCESS).json(deletedUser);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error deleting user';
-
-            res.status(status).send({message, error: err});
+            console.error('Error deleting user:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting user'),
+            });
         }
     }
 
     async register(req: Request, res: Response) {
         try {
-            const {name, email, password, role, status}: UserType = req.body;
+            const { name, email, password, role, status }: UserType = req.body;
             if (!name || !email || !password || !role) {
-                throw 'Missing required fields: ' + HTTP_STATUS.BAD_REQUEST;
+                throw new Error('Missing required fields');
             }
 
-            const existingUser = await User.findOne({email});
+            const existingUser = await User.findOne({ email });
             if (existingUser) {
-                throw 'User already exists: ' + HTTP_STATUS.CONFLICT;
+                throw new Error('User already exists');
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -173,7 +186,7 @@ class userController {
                 status: newStatus,
                 profilePic: '',
                 createdAt,
-                googleToken:''
+                googleToken: ''
             });
 
             await newUser.save();
@@ -183,42 +196,41 @@ class userController {
                     await rankingControllers.start({ userId });
                 } catch (err) {
                     console.error('Error creating ranking for driver:', err);
-                    throw 'Error creating ranking for driver: ' + HTTP_STATUS.SERVER_ERROR;
+                    throw new Error('Error creating ranking for driver');
                 }
             }
 
-            res.status(HTTP_STATUS.SUCCESS).send({message: 'User registered successfully'});
-
+            res.status(HTTP_STATUS.SUCCESS).send({ message: 'User registered successfully' });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error registering user';
-
-            res.status(status).send({message, error: err});
+            console.error('Error registering user:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error registering user'),
+            });
         }
-    };
+    }
 
     async login(req: Request, res: Response) {
         try {
-            const {email, password}: UserType = req.body;
+            const { email, password }: UserType = req.body;
             if (!email || !password) {
-                throw 'Missing required fields: ' + HTTP_STATUS.BAD_REQUEST;
+                throw new Error('Missing required fields');
             }
 
-            const expectedUser = await User.findOne({email});
+            const expectedUser = await User.findOne({ email });
             if (!expectedUser) {
-                throw 'User not found: ' + HTTP_STATUS.NOT_FOUND;
+                throw new Error('User not found');
             }
 
             const forbiddenStatuses = ['inactive', 'deleted', 'archived'];
 
             if (forbiddenStatuses.includes(expectedUser.status || '')) {
-                throw 'User account is not active: ' + HTTP_STATUS.AUTH_ERROR;
+                throw new Error('User account is not active');
             }
 
             const isPasswordValid = await bcrypt.compare(password, expectedUser.password);
 
             if (!isPasswordValid) {
-                throw 'Invalid credentials: ' + HTTP_STATUS.AUTH_ERROR;
+                throw new Error('Invalid credentials');
             }
 
             const token = jwt.sign({
@@ -228,24 +240,24 @@ class userController {
                 name: expectedUser.name
             }, secretKey as string);
 
-            res.status(HTTP_STATUS.SUCCESS).send({token, message: 'Login successful'});
-
+            res.status(HTTP_STATUS.SUCCESS).send({ token, message: 'Login successful' });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error logging in user';
-            res.status(status).send({message, error: err});
+            console.error('Error logging in user:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error logging in user'),
+            });
         }
-    };
+    }
 
     async uploadUserProfilePic(req: Request, res: Response) {
         const { userId } = req.body;
 
         if (!req.file) {
-            throw ('User does not exist: ' + HTTP_STATUS.BAD_REQUEST)
+            throw new Error('No file provided');
         }
 
         if (!userId) {
-            throw ('User does not exist: ' + HTTP_STATUS.NOT_FOUND)
+            throw new Error('User ID not provided');
         }
 
         try {
@@ -258,17 +270,17 @@ class userController {
             );
 
             if (!updatedUser) {
-                throw ('User does not exist: ' + HTTP_STATUS.NOT_FOUND)
+                throw new Error('User does not exist');
             }
 
-            res.status(HTTP_STATUS.SUCCESS).send({ message: 'Imagen subida correctamente'});
+            res.status(HTTP_STATUS.SUCCESS).send({ message: 'Profile picture uploaded successfully' });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error uploading picture';
-
-            res.status(status).send({message, error: err});
+            console.error('Error uploading profile picture:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error uploading profile picture'),
+            });
         }
-    };
+    }
 
     async getUserProfilePic(req: Request, res: Response) {
         const userId = req.params.key;
@@ -276,11 +288,11 @@ class userController {
         try {
             const user = await User.findOne({ userId }, { profilePic: 1 });
             if (!user) {
-                throw ('User does not exist: ' + HTTP_STATUS.NOT_FOUND)
+                throw new Error('User does not exist');
             }
 
             if (!user.profilePic) {
-                throw ('User picture does not exist: ' + HTTP_STATUS.NOT_FOUND)
+                throw new Error('User profile picture does not exist');
             }
 
             const fileStream = await getFileFromS3(user.profilePic);
@@ -290,10 +302,10 @@ class userController {
 
             fileStream.pipe(res);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error getting picture';
-
-            res.status(status).send({message, error: err});
+            console.error('Error fetching profile picture:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error fetching profile picture'),
+            });
         }
     }
 }

@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import Delivery from './../models/delivery.model';
-import {HTTP_STATUS} from '../types/http-status-codes';
-import {Delivery as DeliveryType} from '../types/delivery';
-import {userControllers} from "./user.controller";
+import { HTTP_STATUS } from '../types/http-status-codes';
+import { Delivery as DeliveryType } from '../types/delivery';
+import { userControllers } from "./user.controller";
 import { v4 as uuidv4 } from 'uuid';
-
+import xss from 'xss';
 
 class deliveryController {
     async create(req: Request, res: Response) {
@@ -28,24 +28,24 @@ class deliveryController {
                 deliveryId: uuidv4(),
                 assignedTo,
                 status: "in-progress",
-                route: "none", // TODO: Ruta cambiarai con pickupLocation y deliveryLocation con el api externa
+                route: "none",
                 productDetails: productWithId,
                 pickupLocation,
                 deliveryLocation,
                 scheduledTime: formattedScheduledTime,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                deliveredAt: null // Inicialmente no entregado
+                deliveredAt: null
             });
 
             const savedDelivery = await newDelivery.save();
 
             res.status(HTTP_STATUS.SUCCESS).json(savedDelivery);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating delivery';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error creating delivery:', err); 
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error creating delivery'), 
+            });
         }
     }
 
@@ -59,55 +59,10 @@ class deliveryController {
 
             res.status(HTTP_STATUS.SUCCESS).json({ deliveries: results, users: users });
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No deliveries found' });
-        }
-    }
-
-    async getAllActive(req: Request, res: Response) {
-        try {
-            const results = await Delivery.find({
-                status: { $in: ["in-progress", "stopped", "pending"] }
-            }).sort({ createdAt: -1 });
-            const mapUsers = results.map(item => item.assignedTo);
-            const users = await Promise.all(mapUsers.map(async userId => {
-                return userControllers.getId(userId);
-            }));
-
-            res.status(HTTP_STATUS.SUCCESS).json({ deliveries: results, users: users });
-        } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No deliveries found' });
-        }
-    }
-
-    async getByDate(req: Request, res: Response): Promise<void> {
-        try {
-            const { startDate, endDate } = req.body;
-            if (!startDate || !endDate) {
-                throw new Error('Start date and end date are required');
-            }
-
-            const start = new Date(startDate as string);
-            const end = new Date(endDate as string);
-
-            const results = await Delivery.find({
-                scheduledTime: { $gte: start, $lte: end }
-            }).sort({ scheduledTime: 1 });
-
-            if (!results.length) {
-                throw ('Deliveries not found: ' + HTTP_STATUS.NOT_FOUND);
-            }
-
-            const mapUsers = results.map(item => item.assignedTo);
-            const users = await Promise.all(mapUsers.map(async userId => {
-                return userControllers.getId(userId);
-            }));
-
-            res.status(HTTP_STATUS.SUCCESS).json({ deliveries: results, users: users });
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error searching delivery';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error fetching all deliveries:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No deliveries found'), 
+            });
         }
     }
 
@@ -116,17 +71,17 @@ class deliveryController {
             const assignedTo = req.query.driverId;
             const existingDelivery = await Delivery.find({ assignedTo }).sort({ createdAt: -1 });
             if (!existingDelivery.length) {
-                throw ('Driver does not have deliveries: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Driver does not have deliveries');
             }
 
             const user = await userControllers.getId(assignedTo);
 
-            res.send({ delivery: existingDelivery, user: user });
+            res.status(HTTP_STATUS.SUCCESS).json({ delivery: existingDelivery, user: user });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching delivery';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error fetching deliveries by driver:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching deliveries by driver'),
+            });
         }
     }
 
@@ -135,14 +90,24 @@ class deliveryController {
             const deliveryId = req.params.deliveryId;
             const existingDelivery = await Delivery.findOne({ deliveryId });
             if (!existingDelivery) {
-                throw ('Delivery does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Delivery does not exist');
             }
-            res.send(existingDelivery);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating delivery';
 
-            res.status(status).send({ message, error: err });
+            const sanitizedDelivery = {
+                ...existingDelivery.toObject(),
+                deliveryId: xss(existingDelivery.deliveryId),
+                assignedTo: xss(existingDelivery.assignedTo),
+                pickupLocation: xss(existingDelivery.pickupLocation),
+                deliveryLocation: xss(existingDelivery.deliveryLocation),
+                status: xss(existingDelivery.status),
+            };
+
+            res.status(HTTP_STATUS.SUCCESS).json(sanitizedDelivery);
+        } catch (err) {
+            console.error('Error fetching delivery by ID:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching delivery'), 
+            });
         }
     }
 
@@ -154,7 +119,7 @@ class deliveryController {
             const existingDelivery = await Delivery.findOne({ deliveryId });
 
             if (!existingDelivery) {
-                throw ({ message: 'Delivery does not exist or cannot be found' });
+                throw new Error('Delivery does not exist');
             }
 
             if (updatedData.scheduledTime && typeof updatedData.scheduledTime === 'string') {
@@ -183,34 +148,84 @@ class deliveryController {
             );
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedDelivery);
-
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating delivery';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error updating delivery:', err); 
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating delivery'), 
+            });
         }
-    };
+    }
 
     async delete(req: Request, res: Response) {
-        try{
+        try {
             const deliveryId = req.params.deliveryId;
             const existingDelivery = await Delivery.findOne({ deliveryId });
 
             if (!existingDelivery) {
-                throw ('Delivery does not exist or cant be found: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Delivery does not exist');
             }
 
             const deletedDelivery = await Delivery.deleteOne({ deliveryId });
 
             res.status(HTTP_STATUS.SUCCESS).json(deletedDelivery);
-        }catch(err){
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating delivery';
-
-            res.status(status).send({ message, error: err });
+        } catch (err) {
+            console.error('Error deleting delivery:', err); 
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting delivery'), 
+            });
         }
-    };
+    }
+
+    async getAllActive(req: Request, res: Response) {
+        try {
+            const results = await Delivery.find({
+                status: { $in: ["in-progress", "stopped", "pending"] }
+            }).sort({ createdAt: -1 });
+            const mapUsers = results.map(item => item.assignedTo);
+            const users = await Promise.all(mapUsers.map(async userId => {
+                return userControllers.getId(userId);
+            }));
+    
+            res.status(HTTP_STATUS.SUCCESS).json({ deliveries: results, users: users });
+        } catch (err) {
+            console.error('Error getting delivery:', err); 
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error getting delivery'), 
+            });
+        }
+    }
+    
+    async getByDate(req: Request, res: Response): Promise<void> {
+        try {
+            const { startDate, endDate } = req.body;
+            if (!startDate || !endDate) {
+                throw new Error('Start date and end date are required');
+            }
+    
+            const start = new Date(startDate as string);
+            const end = new Date(endDate as string);
+    
+            const results = await Delivery.find({
+                scheduledTime: { $gte: start, $lte: end }
+            }).sort({ scheduledTime: 1 });
+    
+            if (!results.length) {
+                throw ('Deliveries not found: ' + HTTP_STATUS.NOT_FOUND);
+            }
+    
+            const mapUsers = results.map(item => item.assignedTo);
+            const users = await Promise.all(mapUsers.map(async userId => {
+                return userControllers.getId(userId);
+            }));
+    
+            res.status(HTTP_STATUS.SUCCESS).json({ deliveries: results, users: users });
+        } catch (err) {
+            console.error('Error getting delivery:', err); 
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error getting delivery'), 
+            });
+        }
+    }
 
 }
 

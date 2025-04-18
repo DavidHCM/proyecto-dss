@@ -58,7 +58,7 @@ export const googleAuth = (app: Application) => {
         session({
             resave: false,
             saveUninitialized: true,
-            secret: 'supersecretpasswordthatnoonewouldeverguess',
+            secret: process.env.SESSION_SECRET || 'default_fallback_not_functional', // since its a fallback with this value it will trigger an error
         })
     );
 

@@ -3,6 +3,7 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { User } from '../types/user';
 import { HTTP_STATUS } from '../types/http-status-codes';
+import xss from 'xss';
 
 const router = express.Router();
 
@@ -10,7 +11,6 @@ const router = express.Router();
 router.get('/google', (req, res, next) => {
     next();
 }, passport.authenticate('google', { scope: ['profile', 'email'] }));
-
 
 // Manejar el callback después de autenticación en Google
 router.get(
@@ -34,14 +34,19 @@ router.get(
                 process.env.JWT_SECRET!,
             );
 
-            res.redirect(`https://ige-front.onrender.com/login?token=${token}`);
-            //res.redirect(`http://192.168.1.84:64448/login?token=${token}`);
+            const sanitizedToken = xss(token);
 
+            res.redirect(`https://ige-front.onrender.com/login?token=${sanitizedToken}`);
         } catch (err) {
+            console.error('Error during Google Authentication:', err);
+
             const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
             const message = err instanceof Error && 'message' in err ? err.message : 'Error during Google Authentication';
 
-            res.status(status).send({ message, error: err });
+            res.status(status).send({
+                message: xss(message),
+                error: xss(err.toString()),
+            });
         }
     }
 );

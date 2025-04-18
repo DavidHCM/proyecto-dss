@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import Notification from './../models/notification.model';
 import { HTTP_STATUS } from '../types/http-status-codes';
 import { Notification as NotificationType } from '../types/notification';
-import {userControllers} from "./user.controller";
-import notificationRoute from "../routes/notification.route";
+import { userControllers } from "./user.controller";
+import xss from 'xss';
 
 class notificationController {
     async create(req: Request, res: Response) {
@@ -20,7 +20,7 @@ class notificationController {
             const existingNotification = await Notification.findOne({ notificationId });
 
             if (existingNotification) {
-                throw ('Notification already exists: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Notification already exists');
             }
 
             const newNotification = new Notification({
@@ -35,19 +35,22 @@ class notificationController {
             const savedNotification = await newNotification.save();
             res.status(HTTP_STATUS.SUCCESS).json(savedNotification);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating notification';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error creating notification:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error creating notification'),
+            });
         }
     }
 
     async getAll(req: Request, res: Response) {
         try {
             const results = await Notification.find({}).sort({ createdAt: -1 });
-            res.send(results);
+            res.status(HTTP_STATUS.SUCCESS).json(results);
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No notifications found' });
+            console.error('Error fetching all notifications:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No notifications found'),
+            });
         }
     }
 
@@ -56,14 +59,23 @@ class notificationController {
             const notificationId = req.params.notificationId;
             const existingNotification = await Notification.findOne({ notificationId });
             if (!existingNotification) {
-                throw ('Notification does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Notification does not exist');
             }
-            res.send(existingNotification);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching notification';
 
-            res.status(status).send({ message, error: err });
+            const sanitizedNotification = {
+                ...existingNotification.toObject(),
+                userId: xss(existingNotification.userId),
+                message: xss(existingNotification.message),
+                status: xss(existingNotification.status),
+                createdAt: existingNotification.createdAt,
+            };
+
+            res.status(HTTP_STATUS.SUCCESS).json(sanitizedNotification);
+        } catch (err) {
+            console.error('Error fetching notification by ID:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching notification'),
+            });
         }
     }
 
@@ -72,17 +84,17 @@ class notificationController {
             const userId = req.query.userId;
 
             const existingNotification = await Notification.find({ userId });
-            if (!existingNotification) {
-                throw ('Notification does not exist: ' + HTTP_STATUS.NOT_FOUND);
+            if (!existingNotification || existingNotification.length === 0) {
+                throw new Error('No notifications found for this user');
             }
             const user = await userControllers.getId(userId);
 
-            res.send({notification: existingNotification, user: user});
+            res.status(HTTP_STATUS.SUCCESS).json({ notification: existingNotification, user: user });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching notification';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error fetching notifications for person:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching notifications for person'),
+            });
         }
     }
 
@@ -94,7 +106,7 @@ class notificationController {
             const existingNotification = await Notification.findOne({ notificationId });
 
             if (!existingNotification) {
-                throw ('Notification does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Notification does not exist');
             }
 
             const updatedNotification = await Notification.findOneAndUpdate(
@@ -105,10 +117,10 @@ class notificationController {
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedNotification);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error updating notification';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error updating notification:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating notification'),
+            });
         }
     }
 
@@ -118,16 +130,16 @@ class notificationController {
             const existingNotification = await Notification.findOne({ notificationId });
 
             if (!existingNotification) {
-                throw ('Notification does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Notification does not exist');
             }
 
             const deletedNotification = await Notification.deleteOne({ notificationId });
             res.status(HTTP_STATUS.SUCCESS).json(deletedNotification);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error deleting notification';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error deleting notification:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting notification'),
+            });
         }
     }
 
@@ -161,10 +173,10 @@ class notificationController {
 
             return savedNotification;
         } catch (err) {
-            throw err;
+            console.error('Error saving notification from socket:', err);
+            throw new Error('Error saving notification');
         }
     }
-
 }
 
 export const notificationControllers = new notificationController();

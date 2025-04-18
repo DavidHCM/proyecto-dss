@@ -3,6 +3,7 @@ import ChatMessage from './../models/chatMessage.model';
 import { HTTP_STATUS } from '../types/http-status-codes';
 import { ChatMessage as ChatMessageType } from '../types/chatMessage';
 import mongoose from "mongoose";
+import xss from 'xss';
 
 class chatMessageController {
     async create(req: Request, res: Response) {
@@ -19,7 +20,7 @@ class chatMessageController {
             const existingMessage = await ChatMessage.findOne({ messageId });
 
             if (existingMessage) {
-                throw ('Message already exists: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Message already exists');
             }
 
             const newMessage = new ChatMessage({
@@ -34,14 +35,14 @@ class chatMessageController {
             const savedMessage = await newMessage.save();
             res.status(HTTP_STATUS.SUCCESS).json(savedMessage);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating chat message';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error creating chat message:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error creating chat message'),
+            });
         }
     }
 
-    async saveMessage(data: { fromUserId: string; toUserId: string; deliveryId: string; content: string; }){
+    async saveMessage(data: { fromUserId: string; toUserId: string; deliveryId: string; content: string; }) {
         try {
             const newMessage = new ChatMessage({
                 messageId: new mongoose.Types.ObjectId().toString(),
@@ -65,7 +66,10 @@ class chatMessageController {
             const messages = await ChatMessage.find({ deliveryId: roomName });
             res.status(HTTP_STATUS.SUCCESS).json(messages);
         } catch (err) {
-            res.status(HTTP_STATUS.BAD_REQUEST).send({ message: 'Error fetching messages', error: err });
+            console.error('Error fetching messages by room:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error fetching messages'),
+            });
         }
     }
 
@@ -78,13 +82,15 @@ class chatMessageController {
         }
     }
 
-
     async getAll(req: Request, res: Response) {
         try {
             const results = await ChatMessage.find({});
             res.send(results);
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No chat messages found' });
+            console.error('Error fetching all chat messages:', err); 
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No chat messages found'), 
+            });
         }
     }
 
@@ -93,14 +99,20 @@ class chatMessageController {
             const messageId = req.params.messageId;
             const existingMessage = await ChatMessage.findOne({ messageId });
             if (!existingMessage) {
-                throw ('Chat message does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Chat message does not exist');
             }
-            res.send(existingMessage);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching chat message';
 
-            res.status(status).send({ message, error: err });
+            const sanitizedMessage = {
+                ...existingMessage.toObject(),
+                content: xss(existingMessage.content),
+            };
+
+            res.send(sanitizedMessage);
+        } catch (err) {
+            console.error('Error fetching chat message:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching chat message'), 
+            });
         }
     }
 
@@ -112,7 +124,7 @@ class chatMessageController {
             const existingMessage = await ChatMessage.findOne({ messageId });
 
             if (!existingMessage) {
-                throw ('Chat message does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Chat message does not exist');
             }
 
             const updatedMessage = await ChatMessage.findOneAndUpdate(
@@ -123,10 +135,10 @@ class chatMessageController {
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedMessage);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error updating chat message';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error updating chat message:', err); 
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating chat message'), 
+            });
         }
     }
 
@@ -136,16 +148,16 @@ class chatMessageController {
             const existingMessage = await ChatMessage.findOne({ messageId });
 
             if (!existingMessage) {
-                throw ('Chat message does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Chat message does not exist');
             }
 
             const deletedMessage = await ChatMessage.deleteOne({ messageId });
             res.status(HTTP_STATUS.SUCCESS).json(deletedMessage);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error deleting chat message';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error deleting chat message:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting chat message'),
+            });
         }
     }
 }

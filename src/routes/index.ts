@@ -8,7 +8,7 @@ import rankingRoutes from "./ranking.route";
 import notificationRoute from "./notification.route";
 import chatMessageRoute from "./chatMessage.route";
 import passwordReset from "./passwordReset.route";
-
+import xss from 'xss';
 import { googleAuth } from '../middlewares/google-auth';
 import googleAuthRoutes from '../routes/googleAuth.routes';
 
@@ -125,8 +125,6 @@ router.use("/resetPassword", passwordReset);
 /**
  * @swagger
  * tags:
-<<<<<<< HEAD
-=======
  *  name: Google
  *  description: Google auth route
  */
@@ -135,7 +133,6 @@ router.use('/authGoogle', googleAuthRoutes);
 /**
  * @swagger
  * tags:
->>>>>>> develop
  *  name: Auth  
  *  description: Auth for general routes when loggin in
  */
@@ -156,8 +153,13 @@ router.get("/auth", authenticate, (req,res) =>{
 router.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.status || HTTP_STATUS.SERVER_ERROR;
     const message = typeof err.message === 'string' ? err.message : 'An unexpected error occurred';
-    console.log(message)
-    res.status(statusCode).send({ message, statusCode });
+
+    console.error('Error:', err);
+
+    res.status(statusCode).send({
+        message: xss(message),
+        statusCode,
+    });
 });
 
 export default router;

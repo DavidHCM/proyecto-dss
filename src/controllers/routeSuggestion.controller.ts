@@ -3,6 +3,7 @@ import axios from 'axios';
 import RouteSuggestion from './../models/routeSuggestion.model';
 import { HTTP_STATUS } from '../types/http-status-codes';
 import { RouteSuggestion as RouteType } from "../types/routeSuggestion";
+import xss from 'xss';
 
 class routeSuggestionController {
     async create(req: Request, res: Response) {
@@ -18,7 +19,7 @@ class routeSuggestionController {
             const existingRouteSuggestion = await RouteSuggestion.findOne({ routeSuggestionId });
 
             if (existingRouteSuggestion) {
-                throw ('Route suggestion already exists: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Route suggestion already exists');
             }
 
             const newRouteSuggestion = new RouteSuggestion({
@@ -32,19 +33,22 @@ class routeSuggestionController {
             const savedRouteSuggestion = await newRouteSuggestion.save();
             res.status(HTTP_STATUS.SUCCESS).json(savedRouteSuggestion);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating route suggestion';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error creating route suggestion:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error creating route suggestion'),
+            });
         }
     }
 
     async getAll(req: Request, res: Response) {
         try {
             const results = await RouteSuggestion.find({});
-            res.send(results);
+            res.status(HTTP_STATUS.SUCCESS).json(results);
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No route suggestions found' });
+            console.error('Error fetching all route suggestions:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No route suggestions found'),
+            });
         }
     }
 
@@ -53,14 +57,24 @@ class routeSuggestionController {
             const routeSuggestionId = req.params.routeSuggestionId;
             const existingRouteSuggestion = await RouteSuggestion.findOne({ routeSuggestionId });
             if (!existingRouteSuggestion) {
-                throw ('Route suggestion does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Route suggestion does not exist');
             }
-            res.send(existingRouteSuggestion);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching route suggestion';
 
-            res.status(status).send({ message, error: err });
+            const sanitizedRouteSuggestion = {
+                ...existingRouteSuggestion.toObject(),
+                routeSuggestionId: xss(existingRouteSuggestion.routeSuggestionId),
+                deliveryId: xss(existingRouteSuggestion.deliveryId),
+                suggestedRoute: xss(existingRouteSuggestion.suggestedRoute),
+                estimatedTime: existingRouteSuggestion.estimatedTime,
+                createdAt: existingRouteSuggestion.createdAt,
+            };
+
+            res.status(HTTP_STATUS.SUCCESS).json(sanitizedRouteSuggestion);
+        } catch (err) {
+            console.error('Error fetching route suggestion by ID:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching route suggestion'),
+            });
         }
     }
 
@@ -72,7 +86,7 @@ class routeSuggestionController {
             const existingRouteSuggestion = await RouteSuggestion.findOne({ routeSuggestionId });
 
             if (!existingRouteSuggestion) {
-                throw ('Route suggestion does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Route suggestion does not exist');
             }
 
             const updatedRouteSuggestion = await RouteSuggestion.findOneAndUpdate(
@@ -83,10 +97,10 @@ class routeSuggestionController {
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedRouteSuggestion);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error updating route suggestion';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error updating route suggestion:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating route suggestion'),
+            });
         }
     }
 
@@ -96,16 +110,16 @@ class routeSuggestionController {
             const existingRouteSuggestion = await RouteSuggestion.findOne({ routeSuggestionId });
 
             if (!existingRouteSuggestion) {
-                throw ('Route suggestion does not exist: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Route suggestion does not exist');
             }
 
             const deletedRouteSuggestion = await RouteSuggestion.deleteOne({ routeSuggestionId });
             res.status(HTTP_STATUS.SUCCESS).json(deletedRouteSuggestion);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error deleting route suggestion';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error deleting route suggestion:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting route suggestion'),
+            });
         }
     }
 
@@ -114,13 +128,13 @@ class routeSuggestionController {
             const { start, end } = req.body;
 
             if (!start || !end) {
-                throw ('Inicio y fin requerido');
+                throw new Error('Start and end locations are required');
             }
 
             const apiKey = process.env.GRASS;
 
             if (!apiKey) {
-                throw new Error('Error en key');
+                throw new Error('API key is missing');
             }
 
             const graphhopperUrl = `https://graphhopper.com/api/1/route?point=${start[1]},${start[0]}&point=${end[1]},${end[0]}&profile=car&locale=es&points_encoded=false&key=${apiKey}`;
@@ -129,15 +143,14 @@ class routeSuggestionController {
 
             const routeData = response.data;
 
-            res.status(200).json(routeData);
+            res.status(HTTP_STATUS.SUCCESS).json(routeData);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : 400;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error al obtener los datos de la ruta';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error fetching route from map:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error fetching route from map'),
+            });
         }
     }
-
 }
 
 export const routeSuggestionControllers = new routeSuggestionController();

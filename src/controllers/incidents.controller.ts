@@ -2,12 +2,11 @@ import { Request, Response } from 'express';
 import Incident from './../models/incident.model';
 import { HTTP_STATUS } from '../types/http-status-codes';
 import { Incident as IncidentType } from '../types/incident';
-import {userControllers} from "./user.controller";
+import { userControllers } from "./user.controller";
 import { v4 as uuidv4 } from 'uuid';
-
+import xss from 'xss';
 
 class incidentController {
-
     async create(req: Request, res: Response) {
         try {
             const {
@@ -35,28 +34,30 @@ class incidentController {
 
             res.status(HTTP_STATUS.SUCCESS).json(savedIncident);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating incident';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error creating incident:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error creating incident'),
+            });
         }
     }
-
 
     async getAll(req: Request, res: Response) {
         try {
             const results = await Incident.find({}).sort({ createdAt: -1 });
             if (!results || results.length === 0) {
-                throw ('There are no results: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('There are no results');
             }
             const mapUsers = results.map(item => item.reportedBy);
             const users = await Promise.all(mapUsers.map(async userId => {
                 return userControllers.getId(userId);
             }));
 
-            res.send({ incident: results, user: users });
+            res.status(HTTP_STATUS.SUCCESS).json({ incident: results, user: users });
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No incidents found' });
+            console.error('Error fetching all incidents:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No incidents found'),
+            });
         }
     }
 
@@ -65,13 +66,16 @@ class incidentController {
             const reportedBy = req.query.driverId;
             const existingIncidents = await Incident.find({ reportedBy }).sort({ createdAt: -1 });
             if (!existingIncidents || existingIncidents.length === 0) {
-                throw ('Driver does not have incidents: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Driver does not have incidents');
             }
 
             const user = await userControllers.getId(reportedBy);
-            res.send({ incident: existingIncidents, user: user });
+            res.status(HTTP_STATUS.SUCCESS).json({ incident: existingIncidents, user: user });
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No incidents found' });
+            console.error('Error fetching incidents by driver:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No incidents found'),
+            });
         }
     }
 
@@ -79,41 +83,49 @@ class incidentController {
         try {
             const results = await Incident.find({ status: "open" }).sort({ createdAt: -1 });
             if (!results || results.length === 0) {
-                throw ('Deliveries not found: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('No open incidents found');
             }
             const mapUsers = results.map(item => item.reportedBy);
             const users = await Promise.all(mapUsers.map(async userId => {
                 return userControllers.getId(userId);
             }));
 
-            res.send({ incident: results, user: users });
+            res.status(HTTP_STATUS.SUCCESS).json({ incident: results, user: users });
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error searching delivery';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error fetching open incidents:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching open incidents'),
+            });
         }
     }
-
-
 
     async getById(req: Request, res: Response) {
         try {
             const incidentId = req.params.incidentId;
-            //console.log(incidentId)
             const existingIncident = await Incident.findOne({ incidentId });
             if (!existingIncident) {
-                throw ('Incident does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Incident does not exist');
             }
-            res.send(existingIncident);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching incident';
 
-            res.status(status).send({ message, error: err });
+            const sanitizedIncident = {
+                ...existingIncident.toObject(),
+                incidentId: xss(existingIncident.incidentId),
+                reportedBy: xss(existingIncident.reportedBy),
+                deliveryId: xss(existingIncident.deliveryId),
+                type: xss(existingIncident.type),
+                description: xss(existingIncident.description),
+                status: xss(existingIncident.status),
+                location: xss(existingIncident.location),
+            };
+
+            res.status(HTTP_STATUS.SUCCESS).json(sanitizedIncident);
+        } catch (err) {
+            console.error('Error fetching incident by ID:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching incident'),
+            });
         }
     }
-
 
     async update(req: Request, res: Response) {
         try {
@@ -123,7 +135,7 @@ class incidentController {
             const existingIncident = await Incident.findOne({ incidentId });
 
             if (!existingIncident) {
-                throw ('Incident does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Incident does not exist');
             }
 
             const updatedIncident = await Incident.findOneAndUpdate(
@@ -134,13 +146,12 @@ class incidentController {
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedIncident);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error updating incident';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error updating incident:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating incident'),
+            });
         }
     }
-
 
     async delete(req: Request, res: Response) {
         try {
@@ -148,16 +159,16 @@ class incidentController {
             const existingIncident = await Incident.findOne({ incidentId });
 
             if (!existingIncident) {
-                throw ('Incident does not exist: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Incident does not exist');
             }
 
             const deletedIncident = await Incident.deleteOne({ incidentId });
             res.status(HTTP_STATUS.SUCCESS).json(deletedIncident);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error deleting incident';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error deleting incident:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting incident'),
+            });
         }
     }
 }

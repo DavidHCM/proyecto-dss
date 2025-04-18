@@ -2,21 +2,18 @@ import { Request, Response } from 'express';
 import Ranking from './../models/ranking.model';
 import { HTTP_STATUS } from '../types/http-status-codes';
 import { Ranking as RankingType } from '../types/ranking';
-import {userControllers} from "./user.controller";
+import { userControllers } from "./user.controller";
+import xss from 'xss';
 
 class rankingController {
     async create(req: Request, res: Response) {
         try {
-            const {
-                userId,
-                points,
-                rank
-            }: RankingType = req.body;
+            const { userId, points, rank }: RankingType = req.body;
 
             const existingRanking = await Ranking.findOne({ userId });
 
             if (existingRanking) {
-                throw ('Ranking for this user already exists: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Ranking for this user already exists');
             }
 
             const newRanking = new Ranking({
@@ -28,10 +25,10 @@ class rankingController {
             const savedRanking = await newRanking.save();
             res.status(HTTP_STATUS.SUCCESS).json(savedRanking);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating ranking';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error creating ranking:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error creating ranking'),
+            });
         }
     }
 
@@ -42,7 +39,7 @@ class rankingController {
             const existingRanking = await Ranking.findOne({ userId });
 
             if (existingRanking) {
-                throw 'Ranking for this user already exists: ' + HTTP_STATUS.CONFLICT;
+                throw new Error('Ranking for this user already exists');
             }
 
             const newRanking = new Ranking({
@@ -54,13 +51,10 @@ class rankingController {
             const savedRanking = await newRanking.save();
             return savedRanking;
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error creating ranking';
-
-            throw { status, message, error: err };
+            console.error('Error starting ranking:', err);
+            throw new Error('Error starting ranking');
         }
     }
-
 
     async getAll(req: Request, res: Response) {
         try {
@@ -71,9 +65,12 @@ class rankingController {
                 return userControllers.getId(userId);
             }));
 
-            res.send({rankings: results, users: users});
+            res.status(HTTP_STATUS.SUCCESS).json({ rankings: results, users: users });
         } catch (err) {
-            res.status(HTTP_STATUS.NOT_FOUND).send({ message: 'No rankings found' });
+            console.error('Error fetching all rankings:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('No rankings found'),
+            });
         }
     }
 
@@ -82,14 +79,22 @@ class rankingController {
             const userId = req.params.rankingId;
             const existingRanking = await Ranking.findOne({ userId });
             if (!existingRanking) {
-                throw ('Ranking does not exist for this user: ' + HTTP_STATUS.NOT_FOUND);
+                throw new Error('Ranking does not exist for this user');
             }
-            res.send(existingRanking);
-        } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.NOT_FOUND;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error fetching ranking';
 
-            res.status(status).send({ message, error: err });
+            const sanitizedRanking = {
+                ...existingRanking.toObject(),
+                userId: xss(existingRanking.userId),
+                points: existingRanking.points,
+                rank: existingRanking.rank,
+            };
+
+            res.status(HTTP_STATUS.SUCCESS).json(sanitizedRanking);
+        } catch (err) {
+            console.error('Error fetching ranking by ID:', err);
+            res.status(HTTP_STATUS.NOT_FOUND).send({
+                message: xss('Error fetching ranking'),
+            });
         }
     }
 
@@ -101,7 +106,7 @@ class rankingController {
             const existingRanking = await Ranking.findOne({ userId });
 
             if (!existingRanking) {
-                throw ('Ranking does not exist for this user: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Ranking does not exist for this user');
             }
 
             const updatedRanking = await Ranking.findOneAndUpdate(
@@ -112,10 +117,10 @@ class rankingController {
 
             res.status(HTTP_STATUS.SUCCESS).json(updatedRanking);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error updating ranking';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error updating ranking:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error updating ranking'),
+            });
         }
     }
 
@@ -125,16 +130,16 @@ class rankingController {
             const existingRanking = await Ranking.findOne({ userId });
 
             if (!existingRanking) {
-                throw ('Ranking does not exist for this user: ' + HTTP_STATUS.CONFLICT);
+                throw new Error('Ranking does not exist for this user');
             }
 
             const deletedRanking = await Ranking.deleteOne({ userId });
             res.status(HTTP_STATUS.SUCCESS).json(deletedRanking);
         } catch (err) {
-            const status = err instanceof Error && 'status' in err ? (err as any).status : HTTP_STATUS.BAD_REQUEST;
-            const message = err instanceof Error && 'message' in err ? err.message : 'Error deleting ranking';
-
-            res.status(status).send({ message, error: err });
+            console.error('Error deleting ranking:', err);
+            res.status(HTTP_STATUS.BAD_REQUEST).send({
+                message: xss('Error deleting ranking'),
+            });
         }
     }
 }

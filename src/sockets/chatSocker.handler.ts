@@ -10,7 +10,7 @@ const chatSocketHandler = (io: Server) => {
 
         socket.on('registerUserChat', ({ token }: { token: string }) => {
             try {
-                const secretKey = process.env.JWT_SECRET || 'asd';
+                const secretKey = process.env.JWT_SECRET || 'default_fallback_not_functional'; // since its a fallback with this value it will trigger an error
                 const decoded = jwt.verify(token, secretKey) as { userId: string; name: string };
 
                 socket.data.userId = decoded.userId;
