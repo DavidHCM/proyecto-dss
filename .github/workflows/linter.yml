@@ -22,4 +22,3 @@ jobs:
 
       - name: Run ESLint
         run: npx eslint src --ext .js,.ts,.jsx,.tsx --config eslint.config.mjs
-

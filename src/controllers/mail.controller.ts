@@ -19,7 +19,7 @@ const emailRateLimiter = rateLimit({
 class PasswordController {
   sendResetPasswordEmail = async (req: Request, res: Response) => {
     emailRateLimiter(req, res, async (err) => {
-      if (err) return;
+      if (err) {return;}
 
       const { email, userId } = req.body;
 
@@ -66,11 +66,11 @@ class PasswordController {
 
   serveResetPasswordForm = async (req: Request, res: Response) => {
     emailRateLimiter(req, res, async (err) => {
-      if (err) return;
+      if (err) {return;}
 
       const { token } = req.query;
       try {
-        if (!token) throw new Error("No token provided");
+        if (!token) {throw new Error("No token provided");}
 
         const sanitizedToken = xss(token as string);
         jwt.verify(sanitizedToken, process.env.JWT_SECRET!);
