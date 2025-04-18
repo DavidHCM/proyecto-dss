@@ -9,8 +9,7 @@
     let origin = '';
     let destination = '';
     let map, directionsService, directionsRenderer, autocompleteOrigin, autocompleteDestination;
-    //const MapsKey = "a";
-    const MapsKey = "AIzaSyAnznPW_OkorjuNtgS5uHp0G0WiU5RZeMY";
+    const MapsKey = "a";
     let isAuthenticated = false;
     let userType = '';
 

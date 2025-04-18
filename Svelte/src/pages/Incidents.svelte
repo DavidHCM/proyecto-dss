@@ -54,8 +54,7 @@
         }
     });
 
-    //const MapsKey = "a";
-    const MapsKey = "AIzaSyAnznPW_OkorjuNtgS5uHp0G0WiU5RZeMY";
+    const MapsKey = "a";
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${MapsKey}&libraries=places`;
     script.async = true;
