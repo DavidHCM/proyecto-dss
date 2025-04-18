@@ -2,8 +2,8 @@
 # Each line is a file pattern followed by one or more owners.
 
 # The Software Testing Team is the owner of everything in this repository.
-*       @DavidOmarJorgeTonyJose
+*       @David
 
 # Ownership of specific directories.
-/docs/ @DavidOmarJorgeTonyJose
-/scripts/ @DavidOmarJorgeTonyJose
+/docs/ @David
+/scripts/ @David
