@@ -25,8 +25,10 @@ jobs:
       - name: Install Pre-commit
         run: pip install pre-commit
 
-      - name: Run Pre-commit Hooks
-        run: pre-commit run --all-files
-
       - name: Fix Trailing Whitespace
         run: pre-commit run trailing-whitespace --all-files
+
+      - name: Run Pre-commit Hooks
+        run: |
+          pre-commit run --all-files
+          git add .
