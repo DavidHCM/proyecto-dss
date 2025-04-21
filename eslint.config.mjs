@@ -1,14 +1,18 @@
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import noSecrets from 'eslint-plugin-no-secrets';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
   {
-    files: ['**/*.{js,mjs,cjs,ts}'],
+    files: ['**/*.ts'],
     languageOptions: {
       sourceType: 'module',
       ecmaVersion: 'latest',
       globals: globals.node,
+    },
+    plugins: {
+      'no-secrets': noSecrets,
     },
     rules: {
       'semi': ['error', 'always'],
@@ -16,9 +20,13 @@ export default [
       'no-console': 'off',
       'eqeqeq': ['error', 'always'],
       'curly': 'error',
+      'no-secrets/no-secrets': ['error', { tolerance: 4 }],
     },
   },
-  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.ts'],
+    ...tseslint.configs.recommended[0],
+  },
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
