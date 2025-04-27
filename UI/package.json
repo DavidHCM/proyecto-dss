@@ -1,0 +1,41 @@
+{
+  "name": "svelte-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "sirv public --no-clear --single --port 3001 --host 0.0.0.0",
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/plugin-terser": "^0.4.0",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.5",
+    "postcss": "^8.4.47",
+    "rollup": "^3.15.0",
+    "rollup-plugin-css-only": "^4.3.0",
+    "rollup-plugin-dotenv": "^0.5.1",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-svelte": "^7.1.2",
+    "svelte": "3.59.2",
+    "tailwindcss": "^3.4.14"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.8",
+    "@onsvisual/svelte-maps": "^1.0.26",
+    "cesium": "^1.123.1",
+    "leaflet": "^1.9.4",
+    "maplibre-gl": "^3.3.1",
+    "ol": "^10.2.1",
+    "sirv-cli": "^2.0.0",
+    "socket.io-client": "^4.8.1",
+    "svelte-navigator": "^3.2.2",
+    "svelte-routing": "^2.13.0",
+    "sweetalert2": "^11.14.4"
+  }
+}

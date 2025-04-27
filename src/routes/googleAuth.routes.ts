@@ -40,9 +40,7 @@ router.get(
 
       const sanitizedToken = xss(token);
 
-      res.redirect(
-        `https://ige-front.onrender.com/login?token=${sanitizedToken}`,
-      );
+      res.redirect(`http://localhost:3001/login?token=${sanitizedToken}`);
     } catch (err) {
       console.error("Error during Google Authentication:", err);
 

@@ -28,7 +28,7 @@ class PasswordController {
       const resetToken = jwt.sign({ userId }, process.env.JWT_SECRET!, {
         expiresIn: "1h",
       });
-      const resetLink = `https://ige.onrender.com/resetPassword/reset-password?token=${resetToken}`;
+      const resetLink = `http://localhost:3001/resetPassword/reset-password?token=${resetToken}`;
 
       const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
