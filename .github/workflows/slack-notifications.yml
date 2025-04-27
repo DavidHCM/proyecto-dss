@@ -2,12 +2,12 @@ name: Slack Notifications
 
 on:
   pull_request:
-    types: [opened, reopened, closed]  # Detecta cuando se abre o se cierra (merge)
+    types: [opened, reopened, closed]
   push:
     branches:
       - main
   workflow_run:
-    workflows: ["pre-commit"] # El que corre Gitleaks
+    workflows: ["pre-commit"]
     types:
       - completed
 
@@ -48,13 +48,13 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Notify Slack - Gitleaks Failed
+      - name: Notify Slack - Trufflehog Failed
         if: github.event.workflow_run.conclusion == 'failure'
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
             {
-              "text": ":warning: *Gitleaks detectó posibles secretos comprometidos!*\n*Revisar el último workflow fallido:* https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+              "text": ":warning: *Trufflehog detectó posibles secretos o vulnerabilidades!*\n*Revisar el último workflow fallido:* https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
