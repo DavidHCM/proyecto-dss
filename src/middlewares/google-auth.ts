@@ -16,7 +16,7 @@ export const googleAuth = (app: Application) => {
       {
         clientID: process.env.GOOGLE_ID!,
         clientSecret: process.env.GOOGLE_SECRET!,
-        callbackURL: "https://ige.onrender.com/authGoogle/google/callback",
+        callbackURL: "http://localhost:3000/authGoogle/google/callback",
       },
       async (accessToken, refreshToken, profile, cb) => {
         try {

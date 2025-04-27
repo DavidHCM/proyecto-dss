@@ -8,7 +8,7 @@
     },
     "servers": [
       {
-        "url": "https://ige.onrender.com"
+        "url": "http://localhost:3000"
       }
     ]
   },

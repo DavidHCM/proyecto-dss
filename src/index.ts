@@ -43,7 +43,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://ige-front.onrender.com",
+    origin: "http://localhost:3001",
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
@@ -67,7 +67,7 @@ mongoose
 
     const io = new Server(server, {
       cors: {
-        origin: "https://ige-front.onrender.com",
+        origin: "http://localhost:3001",
         methods: ["GET", "POST", "PUT", "DELETE"],
       },
     });
