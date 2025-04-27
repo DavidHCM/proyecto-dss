@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  proyecto-dss:
+    build: .
+    container_name: proyecto-dss-container
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
