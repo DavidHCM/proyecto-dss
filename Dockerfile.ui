@@ -13,11 +13,11 @@ RUN npm install
 # Copiamos el resto del código
 COPY UI .
 
-# ⚡ Aquí haces el build de producción (compilar Svelte)
+# Aquí haces el build de producción (compilar Svelte)
 RUN npm run build
 
 # Expone el puerto 3001
 EXPOSE 3001
 
-# ⚡ Ahora sirves el directorio de producción
+# Ahora sirves el directorio de producción
 CMD ["npx", "sirv", "public", "--no-clear", "--single", "--host", "0.0.0.0", "--port", "3001"]
