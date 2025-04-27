@@ -155,8 +155,8 @@ router.use((err: any, req: Request, res: Response, next: NextFunction) => {
     typeof err.message === "string"
       ? err.message
       : "An unexpected error occurred";
-  
-      logger.error(`Error occurred on route ${req.originalUrl}:`, err);
+
+  logger.error(`Error occurred on route ${req.originalUrl}:`, err);
 
   res.status(statusCode).send({
     message: xss(message),

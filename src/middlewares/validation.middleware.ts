@@ -11,8 +11,11 @@ export const validateRequest = (
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorDetails = errors.array();
-    logger.error(`Validation failed for request ${req.originalUrl}:`, errorDetails);
-    
+    logger.error(
+      `Validation failed for request ${req.originalUrl}:`,
+      errorDetails,
+    );
+
     const error = new Error(JSON.stringify(errors.array()));
     (error as any).status = HTTP_STATUS.BAD_REQUEST;
     throw error;

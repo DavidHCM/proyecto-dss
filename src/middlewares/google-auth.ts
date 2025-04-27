@@ -7,7 +7,7 @@ import session from "express-session";
 import UserModel from "../models/user.model";
 import { Application } from "express";
 import { config } from "dotenv";
-import logger from "../utils/logger"; 
+import logger from "../utils/logger";
 config();
 
 export const googleAuth = (app: Application) => {
@@ -20,7 +20,9 @@ export const googleAuth = (app: Application) => {
       },
       async (accessToken, refreshToken, profile, cb) => {
         try {
-          logger.info(`Google OAuth started for email: ${profile.emails?.[0]?.value}`);
+          logger.info(
+            `Google OAuth started for email: ${profile.emails?.[0]?.value}`,
+          );
           // Buscar usuario en la base de datos
           const user = await UserModel.findOne({
             email: profile.emails?.[0]?.value,

@@ -1,25 +1,60 @@
-# .github/workflows/slack-notification.yml
-name: Notify Slack on Pull Request
+name: Slack Notifications
 
 on:
   pull_request:
-    types: [opened, closed, reopened]
+    types: [opened, reopened, closed]
+  push:
+    branches:
+      - main
+  workflow_run:
+    workflows: ["pre-commit"]
+    types:
+      - completed
 
 jobs:
-  slack-notification:
+  notify_slack:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Send message to Slack
+      - name: Notify Slack - Pull Request Opened
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": ":sparkles: *Nueva Pull Request* abierta por <${{ github.event.pull_request.user.html_url }}|${{ github.event.pull_request.user.login }}>\n*Titulo:* ${{ github.event.pull_request.title }}\n*Branch:* ${{ github.event.pull_request.head.ref }}"
+            }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"📢 New Pull Request: *${{ github.event.pull_request.title }}* by *${{ github.event.pull_request.user.login }}* on *${{ github.event.repository.name }}*.\",
-            \"attachments\": [
-              {
-                \"text\": \"<${{ github.event.pull_request.html_url }}|View Pull Request>\",
-                \"color\": \"#36a64f\"
-              }
-            ]
-          }" $SLACK_WEBHOOK_URL
+
+      - name: Notify Slack - Pull Request Merged
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": ":twisted_rightwards_arrows: *Pull Request MERGEADO!* por <${{ github.event.pull_request.merged_by.html_url }}|${{ github.event.pull_request.merged_by.login }}>\n*Titulo:* ${{ github.event.pull_request.title }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack - Push to main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": ":rocket: *Push realizado a main* por <${{ github.actor }}>\n*Commits:* ${{ github.event.commits[0].message }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack - Trufflehog Failed
+        if: github.event.workflow_run.conclusion == 'failure'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": ":warning: *Trufflehog detectó posibles secretos o vulnerabilidades!*\n*Revisar el último workflow fallido:* https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
