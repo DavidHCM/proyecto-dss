@@ -1,0 +1,25 @@
+# .github/workflows/slack-notification.yml
+name: Notify Slack on Pull Request
+
+on:
+  pull_request:
+    types: [opened, closed, reopened]
+
+jobs:
+  slack-notification:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send message to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"📢 New Pull Request: *${{ github.event.pull_request.title }}* by *${{ github.event.pull_request.user.login }}* on *${{ github.event.repository.name }}*.\",
+            \"attachments\": [
+              {
+                \"text\": \"<${{ github.event.pull_request.html_url }}|View Pull Request>\",
+                \"color\": \"#36a64f\"
+              }
+            ]
+          }" $SLACK_WEBHOOK_URL

@@ -12,6 +12,7 @@ import { googleAuth } from "../middlewares/google-auth";
 import googleAuthRoutes from "../routes/googleAuth.routes";
 
 import { authenticate, authorize } from "../middlewares";
+import logger from "../utils/logger";
 const router = express.Router();
 import { HTTP_STATUS } from "../types/http-status-codes";
 import { config } from "dotenv";
@@ -22,6 +23,11 @@ router.use(express.json());
 const app: Application = express();
 googleAuth(app);
 router.use(express.json());
+
+router.use((req: Request, res: Response, next: NextFunction) => {
+  logger.info(`Accessed route: ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 /**
  * @swagger
@@ -47,6 +53,7 @@ router.use(express.json());
  *      description: Api is running
  */
 router.get("/", (req, res) => {
+  logger.info("API RUNNING");
   res.send("Api is running");
 });
 
@@ -148,8 +155,8 @@ router.use((err: any, req: Request, res: Response, next: NextFunction) => {
     typeof err.message === "string"
       ? err.message
       : "An unexpected error occurred";
-
-  console.error("Error:", err);
+  
+      logger.error(`Error occurred on route ${req.originalUrl}:`, err);
 
   res.status(statusCode).send({
     message: xss(message),
