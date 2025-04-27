@@ -132,4 +132,5 @@ dist
 
 # Docker
 Dockerfile
+Dockerfile.ui
 .dockerignore
