@@ -13,16 +13,17 @@ echo 1. Limpiar TODO Docker (containers, volumes, networks, images)
 echo 2. Levantar Proyecto (docker compose up --build)
 echo 3. Solo bajar proyecto (docker compose down)
 echo 4. Build individual: Backend o UI
-echo 5. Salir
+echo 5. Escanear vulnerabilidades con Trivy (Backend y UI)
+echo 6. Salir
 echo ============================
-set /p option=Selecciona una opcion (1-5): 
+set /p option=Selecciona una opcion (1-6): 
 
 if "%option%"=="1" goto limpiar
 if "%option%"=="2" goto levantar
 if "%option%"=="3" goto bajar
 if "%option%"=="4" goto buildindividual
-if "%option%"=="5" exit
-
+if "%option%"=="5" goto trivyscan
+if "%option%"=="6" exit
 goto menu
 
 :check_docker
@@ -45,6 +46,10 @@ cls
 echo Limpiando TODO Docker...
 docker compose down --volumes --remove-orphans
 docker system prune -af
+if exist scans (
+    echo Eliminando carpeta de reportes Trivy...
+    rmdir /s /q scans
+)
 if %errorlevel% neq 0 (
     echo Error al limpiar Docker.
 ) else (
@@ -149,3 +154,28 @@ if %errorlevel% neq 0 (
 )
 pause
 goto buildindividual
+
+:trivyscan
+call :check_docker
+color 0E
+cls
+echo ============================
+echo Escaneando imágenes con Trivy...
+echo ============================
+
+:: Crea carpeta scans si no existe
+if not exist scans (
+    mkdir scans
+)
+
+echo Escaneando backend...
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "%cd%\scans:/output" aquasec/trivy image --format table --output /output/backend.txt proyecto-dss-backend
+
+echo Escaneando UI...
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "%cd%\scans:/output" aquasec/trivy image --format table --output /output/ui.txt proyecto-dss-ui
+
+echo ============================
+echo Escaneo completado.
+echo Revisa los reportes en la carpeta "scans"
+pause
+goto menu
