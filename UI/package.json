@@ -36,6 +36,6 @@
     "socket.io-client": "^4.8.1",
     "svelte-navigator": "^3.2.2",
     "svelte-routing": "^2.13.0",
-    "sweetalert2": "^11.14.4"
+    "sweetalert2": "^11.22.4"
   }
 }
